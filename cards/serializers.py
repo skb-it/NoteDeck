@@ -1,6 +1,6 @@
 from rest_framework import serializers
 
-from .models import Card, Deck
+from .models import Card, Deck, Note
 
 
 class DeckSerializer(serializers.ModelSerializer):
@@ -10,15 +10,21 @@ class DeckSerializer(serializers.ModelSerializer):
         read_only_fields = ("owner",)
 
 
-class CardSerializer(serializers.ModelSerializer):
+class OwnedDeckMixin:
+    def validate_deck(self, value):
+        user = self.context["request"].user
+        if value.owner != user:
+            raise serializers.ValidationError("You can only use your own decks.")
+        return value
+
+
+class CardSerializer(OwnedDeckMixin, serializers.ModelSerializer):
     class Meta:
         model = Card
         fields = ("id", "deck", "question", "answer", "created_at")
 
-    def validate_deck(self, value):
-        user = self.context["request"].user
-        if value.owner != user:
-            raise serializers.ValidationError(
-                {"error": "You are not authorized to add this card"}
-            )
-        return value
+
+class NoteSerializer(OwnedDeckMixin, serializers.ModelSerializer):
+    class Meta:
+        model = Note
+        fields = ("id", "deck", "name", "content", "created_at")

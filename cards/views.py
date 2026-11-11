@@ -1,9 +1,13 @@
 from rest_framework import permissions, viewsets
 
-from .models import Card
-from .serializers import CardSerializer, DeckSerializer
+from .models import Card, Note
+from .serializers import CardSerializer, DeckSerializer, NoteSerializer
 
+class DeckOwnerQuerysetMixin:
+    permission_classes = [permissions.IsAuthenticated]
 
+    def get_queryset(self):
+        return self.model.objects.filter(deck__owner=self.request.user)
 class DeckViewSet(viewsets.ModelViewSet):
     serializer_class = DeckSerializer
     permission_classes = [permissions.IsAuthenticated]
@@ -15,9 +19,10 @@ class DeckViewSet(viewsets.ModelViewSet):
         serializer.save(owner=self.request.user)
 
 
-class CardViewSet(viewsets.ModelViewSet):
-    serializer_class = CardSerializer
-    permission_classes = [permissions.IsAuthenticated]
+class NoteViewSet(DeckOwnerQuerysetMixin, viewsets.ModelViewSet):
+    model = Note
+    serializer_class = NoteSerializer
 
-    def get_queryset(self):
-        return Card.objects.filter(deck__owner=self.request.user)
+class CardViewSet(DeckOwnerQuerysetMixin, viewsets.ModelViewSet):
+    model = Card
+    serializer_class = CardSerializer
