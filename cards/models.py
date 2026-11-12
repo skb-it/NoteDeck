@@ -12,6 +12,7 @@ class Deck(models.Model):
     def __str__(self):
         return self.name
 
+
 class Note(models.Model):
     deck = models.ForeignKey(Deck, related_name="notes", on_delete=models.CASCADE)
     name = models.CharField(max_length=200)
@@ -21,6 +22,7 @@ class Note(models.Model):
     def __str__(self):
         return self.name
 
+
 class Card(models.Model):
     deck = models.ForeignKey(Deck, related_name="cards", on_delete=models.CASCADE)
     question = models.TextField()
@@ -29,3 +31,9 @@ class Card(models.Model):
 
     def __str__(self):
         return self.question[:50]
+
+
+class Chunk(models.Model):
+    note = models.ForeignKey(Note, related_name="chunks", on_delete=models.CASCADE)
+    seq_number = models.PositiveIntegerField()
+    content = models.TextField()
