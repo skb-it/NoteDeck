@@ -5,8 +5,6 @@ from django.conf import settings
 
 PROMPT_TEMPLATE = """Jesteś asystentem, który tworzy fiszki do nauki.
 
-"options": {"temperature": 0.2}
-
 Na podstawie poniższego fragmentu notatki utwórz od 2 do 5 fiszek.
 Zasady:
 - każda fiszka sprawdza jedną konkretną informację z tekstu,
@@ -32,9 +30,14 @@ def generate_cards(text: str) -> list[dict]:
 
     response = requests.post(
         f"{settings.OLLAMA_URL}/api/generate",
-        json={"model": settings.OLLAMA_MODEL, "prompt": prompt, "stream": False, "format": "json"},
-        timeout=120,
-    )
+        json={
+            "model": settings.OLLAMA_MODEL,
+            "prompt": prompt,
+            "stream": False,
+            "format": "json",
+            "options": {"temperature": 0.2},
+        },
+        timeout=120, )
 
     response.raise_for_status()
     response_json = response.json()
